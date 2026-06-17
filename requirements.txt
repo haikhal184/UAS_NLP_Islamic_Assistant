@@ -1,0 +1,23 @@
+# ==========================================
+# Dependencies - AI Islamic Assistant
+# ==========================================
+
+# 1. Ekosistem LangChain & RAG
+langchain
+langchain-community
+langchain-core
+langchain-text-splitters
+
+# 2. Agentic Workflow (Otak AI)
+langgraph
+
+# 3. Observability & Tracing
+langsmith
+
+# 4. Vector Database & Document Loaders
+chromadb
+pypdf
+
+# 5. Frontend & Utilitas
+streamlit
+python-dotenv

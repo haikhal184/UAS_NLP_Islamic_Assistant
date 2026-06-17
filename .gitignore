@@ -1,0 +1,47 @@
+# ==========================================
+# .gitignore - AI Islamic Assistant (UAS NLP)
+# ==========================================
+
+# 1. Environment Variables (SANGAT KRUSIAL)
+# Mencegah API Key rahasia ter-upload ke public repository
+.env
+.env.*
+!.env.example
+
+# 2. Vector Database (ChromaDB)
+# Ukurannya bisa sangat besar dan tidak perlu di-upload.
+# Dosen/penguji bisa meng-generate ulang menggunakan data_ingestion.py
+vector_store/
+
+# 3. Python Cache & Compiled Files
+# File otomatis dari sistem Python yang tidak perlu di-tracking
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# 4. Virtual Environments
+# Folder tempat library diinstal (ukurannya ratusan MB)
+venv/
+env/
+.venv/
+env.bak/
+venv.bak/
+
+# 5. OS Generated Files
+# File sampah bawaan sistem operasi Windows/Mac
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# 6. Streamlit & IDE Cache
+# Jika nanti kamu menggunakan Streamlit untuk UI, atau VS Code
+.streamlit/
+.vscode/
+.idea/
