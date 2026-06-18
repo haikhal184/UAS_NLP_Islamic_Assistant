@@ -73,75 +73,77 @@ ai-islamic-assistant/
 
 
 ⚙️ Cara Instalasi & Menjalankan Program (Di Komputer Baru)
-
 Karena alasan keamanan dan efisiensi penyimpanan, file kredensial (.env) dan database lokal (vector_store/) tidak ikut diunggah ke GitHub. Oleh karena itu, ikuti langkah-langkah wajib berikut dari awal.
 
 🚨 PERINGATAN KRUSIAL (Versi Python)
-
 SANGAT DISARANKAN menggunakan Python 3.10 atau Python 3.11.
-
 Jangan menggunakan versi terbaru (seperti Python 3.13 atau 3.14). Pustaka Machine Learning (seperti torch dan transformers) belum memiliki modul pre-compiled untuk versi tersebut. Menggunakan versi terbaru akan menyebabkan error linker link.exe not found di Windows.
 
 1. Unduh Kode Proyek (Download)
-
 Ketik perintah berikut di terminal Anda untuk meng-clone repositori:
 
+Bash
 git clone [https://github.com/haikhal184/UAS_NLP_Islamic_Assistant.git](https://github.com/haikhal184/UAS_NLP_Islamic_Assistant.git)
-
 cd UAS_NLP_Islamic_Assistant
+2. Pengecekan Versi Python (Wajib!)
+Sebelum membuat lingkungan virtual, pastikan terminal Anda membaca versi Python yang benar. Ketik:
 
+Bash
+python --version
+KONDISI AMAN: Jika muncul Python 3.10.x atau Python 3.11.x, silakan langsung lanjut ke Langkah 3.
 
-2. Buat & Aktifkan Virtual Environment
+KONDISI BAHAYA: Jika muncul Python 3.13 atau 3.14, jangan dilanjutkan. Anda memiliki dua solusi:
 
+Solusi A (Jalan Pintas): Jika Anda yakin sudah pernah menginstal Python 3.11 di PC tersebut, gunakan perintah khusus py -3.11 pada Langkah 3 nanti.
+
+Solusi B (Instal Baru): Unduh Python 3.11 dari situs resmi, lakukan instalasi (pastikan centang "Add to PATH"), lalu restart VS Code Anda.
+
+3. Buat & Aktifkan Virtual Environment
 Untuk menghindari bentrok antar-pustaka Python di PC Anda, ketik perintah ini di terminal:
 
+Bash
+# Jika versi default sudah benar (3.10 / 3.11):
 python -m venv env
 
+# JALAN PINTAS (Jika default versi 3.14, tapi Anda punya versi 3.11 di sistem):
+py -3.11 -m venv env
+Setelah env terbentuk, aktifkan dengan perintah:
+
+Bash
 # Untuk mengaktifkan di Windows:
 env\Scripts\activate
 
 # Untuk mengaktifkan di Mac/Linux:
 source env/bin/activate
-
-
 (Pastikan muncul tulisan (env) di awal baris terminal).
 
-3. Instalasi Dependencies (Pustaka AI)
+4. Instalasi Dependencies (Pustaka AI)
+Pastikan Anda menggunakan versi yang stabil dengan mengeksekusi perintah berikut secara utuh:
 
-Pastikan Anda menggunakan versi yang stabil dengan perintah berikut:
-
+Bash
 pip install "transformers>=4.40.0,<5.0.0" "sentence-transformers>=3.0.0" "torch>=2.2.0" langchain-community langchain-huggingface langchain-groq chromadb python-dotenv langgraph streamlit
-
-
-4. Setup File Kredensial (.env)
-
+5. Setup File Kredensial (.env)
 Buat file baru bernama .env di folder utama (sejajar dengan app.py). Masukkan API Keys Anda:
 
+Code snippet
 GROQ_API_KEY="masukkan_groq_api_key_anda_di_sini"
 LANGCHAIN_TRACING_V2="true"
 LANGCHAIN_ENDPOINT="[https://api.smith.langchain.com](https://api.smith.langchain.com)"
 LANGCHAIN_API_KEY="masukkan_langchain_api_key_anda_di_sini"
 LANGCHAIN_PROJECT="UAS_NLP_Islamic_Assistant"
-
-
-5. Membangun Vector Database (Data Ingestion)
-
+6. Membangun Vector Database (Data Ingestion)
 Jalankan skrip pembacaan data untuk memuat teks korpus lokal ke dalam database vektor:
 
+Bash
 python src/data_ingestion.py
+(Tunggu hingga terminal menampilkan pesan ✅ PROSES INGESTI SELESAI DENGAN SUKSES!. Proses ini akan mengunduh model embedding Hugging Face Multilingual lokal).
 
-
-(Tunggu hingga terminal menampilkan pesan ✅ PROSES INGESTI SELESAI DENGAN SUKSES!. Proses ini akan mengunduh model embedding Hugging Face Multilingual).
-
-6. Jalankan Aplikasi Web
-
+7. Jalankan Aplikasi Web
 Setelah database siap, luncurkan antarmuka aplikasi dengan perintah:
 
+Bash
 python -m streamlit run app.py
-
-
 🛠️ TROUBLESHOOTING (Solusi Error di Windows)
-
 Jika Anda menemui masalah saat menjalankan program di sistem operasi Windows, berikut adalah solusi untuk error yang paling umum terjadi:
 
 1. Terminal Tiba-Tiba Berhenti / Force Close (Silent Crash)
@@ -158,10 +160,9 @@ Gejala: Gagal saat melakukan pip install.
 
 Penyebab: Anda menggunakan versi Python yang terlalu baru (misal: Python 3.14) sehingga sistem menuntut C++ Compiler dari Visual Studio.
 
-Solusi: Downgrade (turunkan) versi Python Anda ke Python 3.11. Hapus folder env lama, buat env baru menggunakan Python 3.11, lalu lakukan pip install kembali.
+Solusi: Downgrade (turunkan) versi Python Anda ke Python 3.11. Hapus folder env lama, buat env baru menggunakan Python 3.11 (lihat panduan jalan pintas di Langkah 3), lalu lakukan pip install kembali.
 
 🎓 Identitas Proyek
-
 Aplikasi ini dikembangkan untuk keperluan akademis:
 
 Mata Kuliah: Natural Language Processing (NLP)
