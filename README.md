@@ -86,7 +86,7 @@ Jangan menggunakan versi terbaru (seperti Python 3.13 atau 3.14). Pustaka Machin
 
 Ketik perintah berikut di terminal Anda untuk meng-clone repositori:
 
-git clone [https://github.com/haikhal184/ai-islamic-assistant.git](https://github.com/haikhal184/ai-islamic-assistant.git)
+git clone [https://github.com/haikhal184/UAS_NLP_Islamic_Assistant.git](https://github.com/haikhal184/UAS_NLP_Islamic_Assistant.git)
 
 cd ai-islamic-assistant
 
