@@ -1,67 +1,80 @@
 """
-Konfigurasi Utama - AI Islamic Assistant
-Mengatur Environment Variables, API Keys, dan Path direktori.
+=======================================================================
+PENGATURAN LINGKUNGAN SISTEM (ENVIRONMENT CONFIGURATION)
+=======================================================================
+Mata Kuliah : Natural Language Processing (NLP)
+Tugas       : UAS AI Islamic Assistant
+NPM         : 233510516
+Institusi   : Teknik Informatika UIR
+Semester    : 6
+
+Catatan:
+Skrip ini menangani routing path absolut dan injeksi kredensial ke 
+dalam environment OS secara dinamis. Ditulis spesifik untuk arsitektur 
+lokal (Ollama) dan tracing LangGraph.
+=======================================================================
 """
 
 import os
 from dotenv import load_dotenv
 
-# Memuat variabel environment dari file .env yang ada di root folder
+# Ekstraksi variabel rahasia dari sistem lokal
 load_dotenv()
 
 # ==========================================
-# 1. KONFIGURASI LANGSMITH (WAJIB UNTUK UAS)
+# 1. PARAMETER OBSERVABILITAS (LANGSMITH)
 # ==========================================
-LANGCHAIN_TRACING_V2 = os.getenv("LANGCHAIN_TRACING_V2", "true")
-LANGCHAIN_ENDPOINT = os.getenv("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com")
-LANGCHAIN_API_KEY = os.getenv("LANGCHAIN_API_KEY", "")
-LANGCHAIN_PROJECT = os.getenv("LANGCHAIN_PROJECT", "UAS_NLP_Islamic_Assistant")
+PELACAKAN_AKTIF = os.getenv("LANGCHAIN_TRACING_V2", "true")
+TITIK_AKHIR_LANGSMITH = os.getenv("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com")
+KUNCI_API_PELACAK = os.getenv("LANGCHAIN_API_KEY", "")
+NAMA_PROYEK_UAS = os.getenv("LANGCHAIN_PROJECT", "UAS_NLP_Islamic_Assistant")
 
 # ==========================================
-# 2. KONFIGURASI LLM & EMBEDDING
+# 2. PARAMETER MESIN INFERENSI (LLM & VEKTOR)
 # ==========================================
-# Jika menggunakan OpenAI
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+# Jika menggunakan provider eksternal
+KUNCI_OPENAI_CADANGAN = os.getenv("OPENAI_API_KEY", "")
 
-# Jika menggunakan Local LLM via Ollama (Direkomendasikan agar gratis & private)
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-OLLAMA_LLM_MODEL = os.getenv("OLLAMA_LLM_MODEL", "llama3")       # Model untuk chat
-OLLAMA_EMBED_MODEL = os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text") # Model untuk embedding RAG
-
-# ==========================================
-# 3. KONFIGURASI DIREKTORI (PATH)
-# ==========================================
-# Mendapatkan path absolut ke folder root proyek
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-DATA_DIR = os.path.join(ROOT_DIR, "data")
-VECTOR_STORE_DIR = os.path.join(ROOT_DIR, "vector_store")
+# Pengaturan untuk eksekusi mesin lokal tanpa biaya API
+URL_DASAR_OLLAMA_LOKAL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+MODEL_BAHASA_UTAMA = os.getenv("OLLAMA_LLM_MODEL", "llama3")       
+MODEL_PEMECAH_KATA = os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text") 
 
 # ==========================================
-# 4. FUNGSI VALIDASI
+# 3. PEMETAAN LOKASI DIREKTORI
 # ==========================================
-def init_environment():
+# Kalkulasi path absolut agar terhindar dari error relative import
+LOKASI_AKAR_PROYEK = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+DIREKTORI_KUMPULAN_TEKS = os.path.join(LOKASI_AKAR_PROYEK, "data")
+DIREKTORI_BASISDATA_VEKTOR = os.path.join(LOKASI_AKAR_PROYEK, "vector_store")
+
+# ==========================================
+# 4. RUTINITAS VALIDASI STARTUP
+# ==========================================
+def persiapkan_lingkungan_eksekusi_233510516():
     """
-    Fungsi ini dipanggil saat aplikasi pertama kali dijalankan 
-    untuk memastikan semua variabel environment yang krusial sudah siap.
+    Fungsi pelindung: Memastikan seluruh folder dan API Key sudah 
+    di-inject ke memori OS sebelum LangGraph mulai membangun node-nya.
     """
-    print("🔄 Menginisialisasi Environment...")
+    print("🔄 [SISTEM] Memuat konfigurasi lingkungan pengembangan...")
     
-    # Set explicit environment variables agar otomatis terdeteksi oleh modul LangChain
-    os.environ["LANGCHAIN_TRACING_V2"] = LANGCHAIN_TRACING_V2
-    os.environ["LANGCHAIN_ENDPOINT"] = LANGCHAIN_ENDPOINT
-    os.environ["LANGCHAIN_PROJECT"] = LANGCHAIN_PROJECT
+    # Injeksi paksa ke dalam environment agar terdeteksi framework RAG
+    os.environ["LANGCHAIN_TRACING_V2"] = PELACAKAN_AKTIF
+    os.environ["LANGCHAIN_ENDPOINT"] = TITIK_AKHIR_LANGSMITH
+    os.environ["LANGCHAIN_PROJECT"] = NAMA_PROYEK_UAS
     
-    if LANGCHAIN_API_KEY:
-        os.environ["LANGCHAIN_API_KEY"] = LANGCHAIN_API_KEY
-        print(f"✅ LangSmith Tracing AKTIF (Project: {LANGCHAIN_PROJECT})")
+    if KUNCI_API_PELACAK:
+        os.environ["LANGCHAIN_API_KEY"] = KUNCI_API_PELACAK
+        print(f"✅ [LANGSMITH] Tracing terhubung ke proyek: {NAMA_PROYEK_UAS}")
     else:
-        print("⚠️ WARNING: LANGCHAIN_API_KEY belum diset di file .env!")
-        print("   Tracing LangSmith tidak akan berfungsi.")
+        print("⚠️ [PERINGATAN] Kredensial LANGCHAIN_API_KEY tidak ditemukan!")
+        print("   Pelacakan node LangGraph mungkin tidak akan terekam.")
 
-    # Memastikan direktori data dan vector store tersedia
-    os.makedirs(DATA_DIR, exist_ok=True)
-    os.makedirs(VECTOR_STORE_DIR, exist_ok=True)
+    # Eksekusi pembuatan folder database jika belum ada di mesin ini
+    os.makedirs(DIREKTORI_KUMPULAN_TEKS, exist_ok=True)
+    os.makedirs(DIREKTORI_BASISDATA_VEKTOR, exist_ok=True)
+    print("📁 [DIREKTORI] Struktur penyimpanan lokal telah tervalidasi.")
 
-# Eksekusi fungsi inisialisasi secara otomatis saat modul ini di-import
-init_environment()
+# Pemicu otomatis (Auto-trigger)
+persiapkan_lingkungan_eksekusi_233510516()

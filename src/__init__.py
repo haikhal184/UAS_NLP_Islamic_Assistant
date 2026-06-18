@@ -1,29 +1,42 @@
 """
-Package 'src' - Core Logic AI Islamic Assistant (UAS NLP)
+=======================================================================
+MODUL INTI (SRC) - SISTEM PAKAR ISLAM BERBASIS RAG
+=======================================================================
+Mata Kuliah : Natural Language Processing (NLP)
+NPM         : 233510516
+Institusi   : Teknik Informatika - Universitas Islam Riau (UIR)
+Semester    : 5
 
-File __init__.py ini menginisialisasi folder 'src' sebagai modul Python.
-Di sini kita juga bisa mengatur fungsi apa saja yang diekspos agar 
-import di file app.py utama menjadi lebih rapi dan singkat.
+Penjelasan Kode:
+File inisialisasi ini bertugas untuk mengubah direktori 'src' 
+menjadi paket Python yang terisolasi. Melalui file ini, modul-modul 
+seperti pemrosesan graf (LangGraph) dan konfigurasi lingkungan 
+diekspos secara aman ke antarmuka utama (Streamlit).
+=======================================================================
 """
 
-__version__ = "1.0.0"
-__description__ = "Agentic RAG Assistant menggunakan LangChain, LangGraph, dan LangSmith"
+# Menyimpan identitas unik sebagai konstanta untuk menghindari
+KODE_IDENTITAS_MAHASISWA = "233510516"
+VERSI_APLIKASI_NLP = "1.0.0-final-uas"
+DESKRIPSI_SISTEM_RAG = "Mesin Penjawab Cerdas dengan Agentic Workflow LangGraph"
 
 # -------------------------------------------------------------------
-# CATATAN: 
-# Kode di bawah ini di-comment (dimatikan) terlebih dahulu karena 
-# file config.py dan workflow.py belum kita isi kodenya. 
+# BLOK EKSPOR MODUL (ROUTING)
 # 
-# Nanti, setelah fungsi di workflow.py selesai dibuat (misalnya 
-# variabel graf/state bernama 'app_graph'), kamu bisa menghilangkan 
-# tanda '#' agar bisa di-import langsung di app.py seperti ini:
-# -> from src import app_graph
+# Catatan Implementasi: 
+# Jika arsitektur di dalam file workflow.py dan config.py sudah 
+# rampung dikerjakan, aktifkan (uncomment) baris kode di bawah ini 
+# untuk mempermudah pemanggilan fungsi di file app.py.
+# 
+# Contoh pemanggilan di app.py nantinya:
+# from src import graf_langgraph_utama
 # -------------------------------------------------------------------
 
-# from .config import init_environment
-# from .workflow import app_graph
+# from .config import inisialisasi_lingkungan_sistem
+# from .workflow import graf_langgraph_utama
 
 # __all__ = [
-#     "init_environment",
-#     "app_graph"
+#     "inisialisasi_lingkungan_sistem",
+#     "graf_langgraph_utama",
+#     "KODE_IDENTITAS_MAHASISWA"
 # ]

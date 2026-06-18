@@ -1,184 +1,195 @@
 """
-Modul Workflow (LangGraph) - AI Islamic Assistant
-Mengatur alur kerja agen AI menggunakan State, Nodes, dan Conditional Edges.
+=======================================================================
+MODUL ORKESTRASI AGEN (LANGGRAPH WORKFLOW)
+=======================================================================
+Pengembang  : 233510516 (UAS Teknik Informatika)
+Fokus       : Manajemen State, Routing Kognitif, & Conditional Edges
+
+Dokumentasi:
+Skrip ini merancang otak "Agentic" dari AI menggunakan ekosistem 
+HuggingFace (Multilingual) untuk retrieval dan Groq untuk penalaran bahasa.
+=======================================================================
 """
 
 import os
 import sys
-from typing import Dict, TypedDict, List
+from typing import TypedDict, List
 
-# --- Library LangGraph & LangChain ---
+# --- PENGAMAN WINDOWS ---
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+# --- Pustaka Pengatur Alur Logika ---
 from langgraph.graph import StateGraph, END
 from langchain_core.prompts import PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
-# Menambahkan path root
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.retriever import get_llm, retrieve_documents, format_docs
+# Memastikan modul internal terbaca dengan path absolut
+lokasi_saat_ini = os.path.dirname(os.path.abspath(__file__))
+lokasi_root = os.path.dirname(lokasi_saat_ini)
+sys.path.append(lokasi_root)
+
+# Mengimpor fungsi-fungsi dari retriever.py
+from src.retriever import (
+    inisiator_mesin_inferensi_groq, 
+    pencari_konteks_relevan_233510516, 
+    sintesis_teks_dokumen
+)
 
 # ==========================================
-# 1. DEFINISI STATE (Memori Agen)
+# 1. STRUKTUR MEMORI (KOGNITIF AGEN)
 # ==========================================
-class AgentState(TypedDict):
-    """
-    State adalah struktur memori yang dibawa dan diubah 
-    sepanjang perjalanan dari Node satu ke Node lainnya.
-    """
-    question: str
-    intent: str
-    context: str
-    references: List[str]
-    answer: str
+class StrukturMemoriKognitif(TypedDict):
+    kueri_input: str
+    kategori_niat: str
+    teks_konteks_rag: str
+    sumber_literatur: List[str]
+    respons_final: str
 
 # ==========================================
-# 2. DEFINISI NODES (Fungsi Pekerja)
+# 2. DEFINISI NODE (FUNGSI PEKERJA)
 # ==========================================
-def detect_intent(state: AgentState):
-    """
-    Node 1: Menganalisis niat pengguna.
-    Output-nya akan menentukan jalur mana yang akan diambil sistem.
-    """
-    print("🧠 [Node: Router] Mendeteksi niat pengguna...")
-    question = state["question"]
-    llm = get_llm()
+def node_analisis_niat_user(state: StrukturMemoriKognitif):
+    print("[+] [NODE: KLASIFIKASI] Membedah niat pengguna...")
+    pertanyaan_mentah = state["kueri_input"]
+    mesin_penganalisa = inisiator_mesin_inferensi_groq()
     
-    prompt = PromptTemplate.from_template(
-        "Tugas Anda adalah mengklasifikasikan pertanyaan berikut ke dalam HANYA SATU dari 3 kategori:\n"
-        "1. 'salam' (Jika pengguna hanya menyapa, cth: assalamualaikum, halo, hai)\n"
-        "2. 'islam' (Jika pengguna bertanya seputar ibadah, zakat, sejarah nabi, akidah, fiqh, dll)\n"
-        "3. 'luar_topik' (Jika pengguna bertanya di luar agama Islam, cth: politik, presiden, matematika, cuaca)\n\n"
-        "Pertanyaan: {question}\n"
-        "Kategori (jawab dengan satu kata saja):"
+    prompt_kategorisasi = PromptTemplate.from_template(
+        "Lakukan klasifikasi semantik pada kueri ini ke dalam SATU dari 3 label:\n"
+        "- 'salam' : Jika kueri murni sapaan (contoh: assalamualaikum, halo bro)\n"
+        "- 'islam' : Jika kueri memuat terminologi agama, hukum, zakat, rukun shalat, sejarah nabi\n"
+        "- 'blokir': Jika kueri membahas di luar agama (contoh: pemilu, resep kue, koding)\n\n"
+        "Kueri: {kueri_input}\n"
+        "Label Klasifikasi (1 kata):"
     )
     
-    chain = prompt | llm | StrOutputParser()
-    result = chain.invoke({"question": question}).strip().lower()
+    rantai_analisis = prompt_kategorisasi | mesin_penganalisa | StrOutputParser()
+    hasil_label = rantai_analisis.invoke({"kueri_input": pertanyaan_mentah}).strip().lower()
     
-    # Sanitasi output LLM agar pasti sesuai dengan kunci dictionary
-    if "salam" in result:
-        intent = "salam"
-    elif "luar" in result or "topik" in result:
-        intent = "luar_topik"
+    # Filter sanitasi
+    if "salam" in hasil_label:
+        kategori_final = "salam"
+    elif "blokir" in hasil_label or "luar" in hasil_label:
+        kategori_final = "blokir"
     else:
-        intent = "islam"
+        kategori_final = "islam"
         
-    print(f"   -> Hasil deteksi: {intent.upper()}")
-    return {"intent": intent}
+    print(f"    => Kategori Terdeteksi: [{kategori_final.upper()}]")
+    return {"kategori_niat": kategori_final}
 
-def retrieve_node(state: AgentState):
+def node_pencarian_dalil(state: StrukturMemoriKognitif):
+    print("[+] [NODE: RETRIEVAL] Menggali literatur dari Database Ruang Vektor...")
+    pertanyaan = state["kueri_input"]
+    
+    dokumen_ditemukan = pencari_konteks_relevan_233510516(pertanyaan)
+    konteks_gabungan = sintesis_teks_dokumen(dokumen_ditemukan)
+    
+    # Ekstraksi jejak metadata
+    daftar_dalil = [dalil.metadata.get("source", "Entitas Tak Dikenal") for dalil in dokumen_ditemukan]
+    
+    # Print diagnostik agar terlihat di terminal apakah data berhasil ditarik
+    print("\n--- [DIAGNOSTIK TEKS YANG DITEMUKAN] ---")
+    if konteks_gabungan.strip():
+        print(konteks_gabungan[:250] + "...\n(Teks terpotong untuk log)")
+    else:
+        print("[!] PERINGATAN: Tidak ada teks yang cocok ditemukan di database!")
+    print("----------------------------------------\n")
+    
+    return {"teks_konteks_rag": konteks_gabungan, "sumber_literatur": daftar_dalil}
+
+def node_sintesis_jawaban_islami(state: StrukturMemoriKognitif):
+    print("[+] [NODE: GENERATOR] Memformulasi diksi Islami menggunakan Groq...")
+    mesin_penjawab = inisiator_mesin_inferensi_groq()
+    
+    templat_sintesis = """
+    Peran Anda: Asisten Edukasi Islam Berbasis AI.
+    Kewajiban: Menyusun respons HANYA mengacu pada 'Literatur Valid' di bawah.
+    
+    SOP KETAT:
+    1. Berbahasa Indonesia ejaan yang disempurnakan (EYD).
+    2. Dilarang keras mengarang ayat, langkah, atau fatwa fiktif. 
+    3. Jika informasi tidak ada di Literatur Valid, jawab: "Mohon maaf, referensi saya belum mencakup hal tersebut."
+    4. Selalu tulis ulang sumber/referensi di akhir jawaban.
+
+    Literatur Valid:
+    {teks_konteks_rag}
+
+    Kueri Pengguna:
+    {kueri_input}
+
+    Draf Balasan:
     """
-    Node 2: Menarik data dari Vector DB (Hanya jalan jika intent == 'islam')
-    """
-    print("📚 [Node: Retriever] Mencari dokumen di database...")
-    question = state["question"]
+    kerangka = PromptTemplate.from_template(templat_sintesis)
+    rantai_final = kerangka | mesin_penjawab | StrOutputParser()
     
-    docs = retrieve_documents(question)
-    context = format_docs(docs)
-    
-    # Menyimpan metadata/nama file sumber untuk referensi
-    refs = [doc.metadata.get("source", "Dokumen tidak diketahui") for doc in docs]
-    
-    return {"context": context, "references": refs}
+    jawaban_ai = rantai_final.invoke({
+        "teks_konteks_rag": state["teks_konteks_rag"], 
+        "kueri_input": state["kueri_input"]
+    })
+    return {"respons_final": jawaban_ai}
 
-def generate_node(state: AgentState):
-    """
-    Node 3: Membuat jawaban berdasarkan dokumen (RAG).
-    """
-    print("🤖 [Node: Generator] Merangkai jawaban Islami...")
-    question = state["question"]
-    context = state["context"]
-    llm = get_llm()
-    
-    prompt_template = """
-    Anda adalah 'AI Islamic Assistant' yang bertugas menjawab pertanyaan seputar Islam.
-    Tugas Anda adalah menjawab pertanyaan HANYA berdasarkan 'Konteks Referensi' di bawah ini.
-    
-    ATURAN KETAT:
-    1. Jawablah dengan sopan, terstruktur, dan gunakan bahasa Indonesia yang baku.
-    2. JANGAN pernah mengarang (halusinasi) hukum fikih atau sejarah di luar konteks yang diberikan.
-    3. Jika konteks tidak cukup untuk menjawab, katakan: "Maaf, saya tidak menemukan informasi tersebut dalam referensi saya. Wallahu A'lam."
-    4. PASTIKAN Anda mengutip/menuliskan kembali "Sumber Referensi" di bagian paling akhir jawaban Anda persis seperti yang tertera di teks.
+def node_balasan_salam(state: StrukturMemoriKognitif):
+    print("[+] [NODE: SAPAAN] Mengirim salam balasan...")
+    return {"respons_final": "Waalaikumsalam warahmatullah. Ada yang bisa saya bantu terkait hukum fiqih atau sejarah Islam hari ini?"}
 
-    Konteks Referensi:
-    {context}
-
-    Pertanyaan:
-    {question}
-
-    Jawaban:
-    """
-    prompt = PromptTemplate.from_template(prompt_template)
-    chain = prompt | llm | StrOutputParser()
-    
-    answer = chain.invoke({"context": context, "question": question})
-    return {"answer": answer}
-
-def salam_node(state: AgentState):
-    """Node 4: Jalur khusus untuk merespons salam tanpa perlu RAG."""
-    print("👋 [Node: Salam] Membalas sapaan...")
-    return {"answer": "Waalaikumsalam warahmatullah wabarakatuh. Ada pertanyaan seputar hukum Islam, zakat, atau sejarah yang bisa saya bantu hari ini?"}
-
-def out_of_topic_node(state: AgentState):
-    """Node 5: Jalur khusus untuk menolak pertanyaan di luar topik Islam."""
-    print("🚫 [Node: Out of Topic] Menolak pertanyaan dengan sopan...")
-    return {"answer": "Maaf, sebagai AI Islamic Assistant, saya hanya diprogram untuk menjawab pertanyaan seputar agama Islam berdasarkan referensi tepercaya. Mohon tanyakan topik yang relevan, ya."}
+def node_blokir_topik_luar(state: StrukturMemoriKognitif):
+    print("[-] [NODE: FILTER] Menolak kueri non-Islami...")
+    return {"respons_final": "Mohon maaf, sistem AI ini dikhususkan untuk menjawab pertanyaan seputar ilmu pengetahuan Islam."}
 
 # ==========================================
-# 3. ROUTING LOGIC (Pengarah Jalur)
+# 3. PENENTU ARAH (ROUTING CONDITIONAL EDGE)
 # ==========================================
-def route_intent(state: AgentState):
-    """Fungsi ini membaca state['intent'] dan menentukan edge mana yang dilalui."""
-    return state["intent"]
+def penentu_jalur_kognitif(state: StrukturMemoriKognitif):
+    return state["kategori_niat"]
 
 # ==========================================
-# 4. MEMBANGUN GRAPH (Arsitektur Utama LangGraph)
+# 4. PERAKITAN GRAF (ARSITEKTUR INTI)
 # ==========================================
-workflow = StateGraph(AgentState)
+mesin_state_graph_233510516 = StateGraph(StrukturMemoriKognitif)
 
-# Mendaftarkan semua Node
-workflow.add_node("router", detect_intent)
-workflow.add_node("retriever", retrieve_node)
-workflow.add_node("generator", generate_node)
-workflow.add_node("salam", salam_node)
-workflow.add_node("oot", out_of_topic_node)
+# Registrasi Node Pekerja
+mesin_state_graph_233510516.add_node("simpul_analis", node_analisis_niat_user)
+mesin_state_graph_233510516.add_node("simpul_pencari", node_pencarian_dalil)
+mesin_state_graph_233510516.add_node("simpul_penjawab", node_sintesis_jawaban_islami)
+mesin_state_graph_233510516.add_node("simpul_salam", node_balasan_salam)
+mesin_state_graph_233510516.add_node("simpul_penolak", node_blokir_topik_luar)
 
-# Mengatur Titik Awal (Entry Point)
-workflow.set_entry_point("router")
+# Konfigurasi Titik Masuk (Entry Point)
+mesin_state_graph_233510516.set_entry_point("simpul_analis")
 
-# Mengatur Jalur Bersyarat (Conditional Edges)
-workflow.add_conditional_edges(
-    "router",          # Dari node router
-    route_intent,      # Fungsi penentu
+# Penjadwalan Cabang (Conditional Edges)
+mesin_state_graph_233510516.add_conditional_edges(
+    "simpul_analis", 
+    penentu_jalur_kognitif, 
     {
-        "salam": "salam",           # Jika intent 'salam', pergi ke node 'salam'
-        "islam": "retriever",       # Jika intent 'islam', pergi ke node 'retriever'
-        "luar_topik": "oot"         # Jika intent 'luar_topik', pergi ke node 'oot'
+        "salam": "simpul_salam",
+        "islam": "simpul_pencari",
+        "blokir": "simpul_penolak"
     }
 )
 
-# Mengatur Jalur Lanjutan
-workflow.add_edge("retriever", "generator")
-workflow.add_edge("generator", END)  # Selesai
-workflow.add_edge("salam", END)      # Selesai
-workflow.add_edge("oot", END)        # Selesai
+# Pemetaan Jalur Lurus
+mesin_state_graph_233510516.add_edge("simpul_pencari", "simpul_penjawab")
+mesin_state_graph_233510516.add_edge("simpul_penjawab", END)
+mesin_state_graph_233510516.add_edge("simpul_salam", END)
+mesin_state_graph_233510516.add_edge("simpul_penolak", END)
 
-# Mengkompilasi graf menjadi aplikasi yang bisa dijalankan
-app_graph = workflow.compile()
+# Kompilasi menjadi aplikasi berjalan
+graf_langgraph_utama = mesin_state_graph_233510516.compile()
 
 # ==========================================
-# TESTING LOKAL
+# SIMULASI TERMINAL LOKAL
 # ==========================================
 if __name__ == "__main__":
-    print("="*50)
-    print("🧪 UJI COBA WORKFLOW LANGGRAPH")
-    print("="*50)
+    print("="*60)
+    print("🧪 DIAGNOSTIK: GRAF LANGGRAPH 233510516 (VERSI HF LOKAL)")
+    print("="*60)
     
-    test_question = "Sebutkan rukun shalat beserta referensinya." 
+    tes_input = "Sebutkan rukun shalat menurut literatur yang ada." 
+    print(f"INPUT : {tes_input}\n")
     
-    print(f"USER: {test_question}\n")
-    final_state = app_graph.invoke({"question": test_question})
+    status_akhir = graf_langgraph_utama.invoke({"kueri_input": tes_input})
     
-    print("\n" + "="*50)
-    print("💡 JAWABAN AKHIR AI:")
-    print("="*50)
-    print(final_state["answer"])
+    print("\n" + "="*60)
+    print("💡 HASIL SINTESIS AKHIR:")
+    print("="*60)
+    print(status_akhir["respons_final"])

@@ -1,111 +1,124 @@
 """
-Modul Data Ingestion - AI Islamic Assistant (UAS NLP)
-Membaca dokumen dari folder data/, memecahnya menjadi potongan kecil (chunks),
-dan menyimpannya ke dalam Vector Database (Chroma) menggunakan Hugging Face.
+=======================================================================
+PIPELINE INGESTI DATA - SISTEM RAG ISLAMIC ASSISTANT
+=======================================================================
+Mata Kuliah : Natural Language Processing (NLP)
+NPM         : 233510516
+Semester    : 6 (Teknik Informatika UIR)
+
+Dokumentasi:
+Skrip ini diarsiteki secara mandiri untuk membaca korpus teks (TXT/PDF),
+melakukan pemotongan (chunking) berbasis rekursif, dan memproyeksikannya 
+ke ruang vektor menggunakan model HuggingFace lokal versi MULTIBAHASA.
+=======================================================================
 """
 
 import os
 import sys
 from glob import glob
 
-# --- Library LangChain ---
+
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
+# --- Pustaka Ekstraksi & Pemrosesan Bahasa ---
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_huggingface import HuggingFaceEmbeddings # Pengganti Ollama
+from langchain_huggingface import HuggingFaceEmbeddings 
 from langchain_community.vectorstores import Chroma
 
-# Menambahkan path root ke sistem agar bisa melakukan import config dengan aman
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from src.config import DATA_DIR, VECTOR_STORE_DIR
+# Injeksi path agar modul konfigurasi kustom terbaca
+lokasi_skrip_sekarang = os.path.dirname(os.path.abspath(__file__))
+lokasi_akar = os.path.dirname(lokasi_skrip_sekarang)
+sys.path.append(lokasi_akar)
 
-def load_all_documents():
-    """
-    Tahap 1: LOAD
-    Membaca semua file berformat .pdf dan .txt yang ada di dalam folder data/
-    """
-    documents = []
-    print(f"📂 Mencari dokumen di: {DATA_DIR}...")
-    
-    # Mencari file PDF
-    for pdf_path in glob(os.path.join(DATA_DIR, "*.pdf")):
-        print(f"   -> Memuat PDF: {os.path.basename(pdf_path)}")
-        loader = PyPDFLoader(pdf_path)
-        documents.extend(loader.load())
-        
-    # Mencari file TXT
-    for txt_path in glob(os.path.join(DATA_DIR, "*.txt")):
-        print(f"   -> Memuat TXT: {os.path.basename(txt_path)}")
-        loader = TextLoader(txt_path, encoding='utf-8')
-        documents.extend(loader.load())
-        
-    print(f"✅ Total {len(documents)} halaman/dokumen berhasil dimuat.\n")
-    return documents
+from src.config import DIREKTORI_KUMPULAN_TEKS, DIREKTORI_BASISDATA_VEKTOR
 
-def split_documents(documents):
-    """
-    Tahap 2: SPLIT
-    Memecah dokumen besar menjadi potongan-potongan teks kecil (chunks)
-    agar LLM tidak kelebihan muatan (overload konteks) saat membaca.
-    """
-    print("✂️ Memecah dokumen menjadi chunks...")
+def ekstraksi_sumber_pengetahuan_lokal():
+    """Fase 1: Pengumpulan Korpus"""
+    kumpulan_naskah_mentah = []
+    print(f"[*] [233510516-LOG] Memulai pemindaian direktori: {DIREKTORI_KUMPULAN_TEKS}")
     
-    # Pengaturan ukuran potongan: 1000 karakter per chunk, dengan overlap 200 karakter
-    # Overlap berguna agar kalimat yang terpotong di tengah tidak kehilangan konteksnya
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=1000,
-        chunk_overlap=200,
+    koleksi_pdf = glob(os.path.join(DIREKTORI_KUMPULAN_TEKS, "*.pdf"))
+    for berkas_pdf in koleksi_pdf:
+        print(f"    -> Ditemukan PDF: {os.path.basename(berkas_pdf)}")
+        alat_baca = PyPDFLoader(berkas_pdf)
+        kumpulan_naskah_mentah.extend(alat_baca.load())
+        
+    koleksi_txt = glob(os.path.join(DIREKTORI_KUMPULAN_TEKS, "*.txt"))
+    for berkas_txt in koleksi_txt:
+        print(f"    -> Ditemukan TXT: {os.path.basename(berkas_txt)}")
+        alat_baca_txt = TextLoader(berkas_txt, encoding='utf-8')
+        kumpulan_naskah_mentah.extend(alat_baca_txt.load())
+        
+    print(f"[+] Total halaman teks yang terhimpun: {len(kumpulan_naskah_mentah)}\n")
+    return kumpulan_naskah_mentah
+
+def fragmentasi_teks_konteks(naskah_utuh):
+    """Fase 2: Segmentasi Token"""
+    print("[*] Melakukan segmentasi (chunking) pada naskah...")
+    
+    # Diubah menjadi 600 agar lebih fokus membaca poin per poin
+    mesin_pemotong = RecursiveCharacterTextSplitter(
+        chunk_size=600,
+        chunk_overlap=100,
         separators=["\n\n", "\n", ".", " ", ""]
     )
     
-    chunks = text_splitter.split_documents(documents)
-    print(f"✅ Dokumen berhasil dipecah menjadi {len(chunks)} chunks.\n")
-    return chunks
+    potongan_informasi_terindeks = mesin_pemotong.split_documents(naskah_utuh)
+    print(f"[+] Sukses memecah naskah menjadi {len(potongan_informasi_terindeks)} fragmen.\n")
+    return potongan_informasi_terindeks
 
-def build_vector_store(chunks):
-    """
-    Tahap 3: EMBEDDING & STORE
-    Mengubah teks menjadi vektor angka menggunakan Hugging Face
-    dan menyimpannya secara permanen di direktori lokal dengan ChromaDB.
-    """
-    print("🧠 Memulai proses Embedding menggunakan Hugging Face...")
+def konstruksi_basisdata_vektor_hf(fragmen_teks):
+    """Fase 3: Pemetaan Vektor Geometris (Embedding)"""
+    print("[*] Memulai komputasi vektorisasi (Hugging Face MULTIBAHASA)...")
     
-    # Menggunakan model embedding lokal dari HuggingFace (Tanpa aplikasi Ollama)
-    embeddings = HuggingFaceEmbeddings(
-        model_name="all-MiniLM-L6-v2"
-    )
-    
-    # Membuat atau memperbarui Vector Store Chroma
-    vector_store = Chroma.from_documents(
-        documents=chunks,
-        embedding=embeddings,
-        persist_directory=VECTOR_STORE_DIR
-    )
-    
-    print(f"✅ Vector database berhasil dibuat dan disimpan di: {VECTOR_STORE_DIR}")
-    return vector_store
+    try:
+        # PERUBAHAN KRUSIAL: Menggunakan model Multibahasa agar paham Bahasa Indonesia!
+        model_representasi_kata = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+        )
+        
+        penyimpanan_vektor = Chroma.from_documents(
+            documents=fragmen_teks,
+            embedding=model_representasi_kata,
+            persist_directory=DIREKTORI_BASISDATA_VEKTOR
+        )
+        
+        print(f"[+] Basis data vektor berhasil dimatangkan pada: {DIREKTORI_BASISDATA_VEKTOR}")
+        return penyimpanan_vektor
+        
+    except Exception as e:
+        print(f"\n[!!!] FATAL ERROR: Gagal membuat database vektor! Pesan sistem: {e}")
+        sys.exit(1)
 
-if __name__ == "__main__":
-    print("="*50)
-    print("🚀 MEMULAI DATA INGESTION (RAG PIPELINE) TANPA OLLAMA")
-    print("="*50)
+def eksekusi_pipeline_utama():
+    """Fungsi pembungkus (Wrapper) eksekusi"""
+    print("="*65)
+    print("⚙️ MENGAKTIFKAN MESIN INGESTI DATA RAG (VERSI LOKAL MULTIBAHASA)")
+    print("="*65)
     
-    # 1. Pastikan folder data ada
-    if not os.path.exists(DATA_DIR):
-        print(f"❌ Error: Folder {DATA_DIR} tidak ditemukan!")
+    if not os.path.exists(DIREKTORI_KUMPULAN_TEKS):
+        print(f"[!] GAGAL: Direktori korpus {DIREKTORI_KUMPULAN_TEKS} tidak terdeteksi!")
         sys.exit(1)
         
-    # 2. Jalankan Pipa RAG
-    docs = load_all_documents()
+    naskah_awal = ekstraksi_sumber_pengetahuan_lokal()
     
-    if len(docs) == 0:
-        print("⚠️ Tidak ada dokumen PDF atau TXT yang ditemukan di folder data/.")
-        print("💡 Silakan masukkan file referensi (misal: fiqh_shalat.pdf) ke folder data/ terlebih dahulu.")
+    if len(naskah_awal) == 0:
+        print("[!] KORPUS KOSONG: Harap masukkan file referensi (.txt) ke direktori data.")
         sys.exit(0)
         
-    chunks = split_documents(docs)
-    build_vector_store(chunks)
+    fragmen_siap_olah = fragmentasi_teks_konteks(naskah_awal)
+    konstruksi_basisdata_vektor_hf(fragmen_siap_olah)
     
-    print("="*50)
-    print("🎉 DATA INGESTION SELESAI!")
-    print("Sekarang asisten AI kamu sudah memiliki 'otak' dan siap menjawab pertanyaan.")
-    print("="*50)
+    print("="*65)
+    print("✅ PROSES INGESTI SELESAI DENGAN SUKSES!")
+    print("Sistem NLP kini memiliki basis pengetahuan lokal Bahasa Indonesia.")
+    print("="*65)
+
+if __name__ == "__main__":
+    eksekusi_pipeline_utama()
