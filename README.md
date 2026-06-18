@@ -137,6 +137,34 @@ pip install "transformers>=4.40.0,<5.0.0" "sentence-transformers>=3.0.0" "torch>
 
 5. Setup File Kredensial (.env)
 
+---
+
+## 🔑 Panduan Mendapatkan API Key (Gratis)
+
+Untuk menjalankan proyek ini, Anda memerlukan dua API Key yang bisa didapatkan secara gratis (Free Tier). Berikut adalah langkah-langkahnya:
+
+### 1. Cara Mendapatkan Groq API Key (Otak LLM)
+Groq digunakan untuk memproses bahasa alami (teks) secepat kilat.
+1. Kunjungi situs resmi Groq Console: [https://console.groq.com/](https://console.groq.com/)
+2. Lakukan pendaftaran/Login (bisa menggunakan akun Google).
+3. Setelah masuk ke *dashboard*, lihat menu di sebelah kiri dan klik **API Keys**.
+4. Klik tombol **Create API Key**.
+5. Beri nama (misalnya: `UAS_NLP_Key`), lalu klik **Submit**.
+6. **Salin (Copy)** kunci yang muncul (dimulai dengan `gsk_...`) dan tempelkan ke dalam file `.env` pada variabel `GROQ_API_KEY`.
+*(Catatan: Simpan kunci ini baik-baik karena Groq hanya menampilkannya satu kali).*
+
+### 2. Cara Mendapatkan LangSmith API Key (Pelacak/Tracing)
+LangSmith digunakan untuk memantau performa, melihat alur *prompt*, dan mendeteksi jika terjadi kesalahan pada *backend* LangGraph.
+1. Kunjungi situs resmi LangSmith: [https://smith.langchain.com/](https://smith.langchain.com/)
+2. Lakukan pendaftaran/Login (bisa menggunakan akun Google/GitHub).
+3. Setelah masuk, cari menu **Settings** (ikon roda gigi) di pojok kiri bawah.
+4. Pada halaman Settings, pilih tab **API Keys**.
+5. Klik tombol **Create API Key**.
+6. Beri nama kunci Anda (bebas), lalu klik **Create**.
+7. **Salin (Copy)** kunci yang muncul (biasanya dimulai dengan `lsv2_...`) dan tempelkan ke dalam file `.env` pada variabel `LANGCHAIN_API_KEY`.
+
+---
+
 Buat file baru bernama .env di folder utama (sejajar dengan app.py). Masukkan API Keys Anda:
 
 Code snippet
@@ -165,6 +193,7 @@ python src/data_ingestion.py
 Setelah database siap, luncurkan antarmuka aplikasi dengan perintah:
 
 Bash
+
 python -m streamlit run app.py
 
 🛠️ TROUBLESHOOTING (Solusi Error di Windows)
@@ -187,6 +216,7 @@ Penyebab: Anda menggunakan versi Python yang terlalu baru (misal: Python 3.14) s
 Solusi: Downgrade (turunkan) versi Python Anda ke Python 3.11. Hapus folder env lama, buat env baru menggunakan Python 3.11 (lihat panduan jalan pintas di Langkah 3), lalu lakukan pip install kembali.
 
 🎓 Identitas Proyek
+
 Aplikasi ini dikembangkan untuk keperluan akademis:
 
 Mata Kuliah: Natural Language Processing (NLP)
