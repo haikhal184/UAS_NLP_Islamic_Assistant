@@ -84,6 +84,7 @@ Ketik perintah berikut di terminal Anda untuk meng-clone repositori:
 
 Bash
 git clone [https://github.com/haikhal184/UAS_NLP_Islamic_Assistant.git](https://github.com/haikhal184/UAS_NLP_Islamic_Assistant.git)
+
 cd UAS_NLP_Islamic_Assistant
 2. Pengecekan Versi Python (Wajib!)
 Sebelum membuat lingkungan virtual, pastikan terminal Anda membaca versi Python yang benar. Ketik:
