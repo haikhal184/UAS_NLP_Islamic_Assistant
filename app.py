@@ -69,11 +69,35 @@ def konfigurasi_halaman_ui_233510516():
         #MainMenu {visibility: hidden;}
         footer {visibility: hidden;}
         header {visibility: hidden;}
+        
+        /* Modifikasi desain tombol sidebar agar lebih elegan */
+        [data-testid="stSidebar"] button {
+            background-color: #059669 !important;
+            border: 1px solid #34D399 !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            transition: all 0.3s ease;
+        }
+        [data-testid="stSidebar"] button:hover {
+            background-color: #047857 !important;
+            border-color: #FCD34D !important;
+            color: #FCD34D !important;
+        }
     </style>
     """, unsafe_allow_html=True)
 
+def hapus_memori_obrolan():
+    """Fungsi callback untuk mereset riwayat chat ketika tombol diklik."""
+    st.session_state.memori_sesi_233510516 = [
+        {
+            "aktor": "bot", 
+            "isi_pesan": "Assalamu'alaikum! Obrolan sebelumnya telah dibersihkan. Ada pertanyaan baru yang bisa saya bantu?", 
+            "teks_rujukan_rag": ""
+        }
+    ]
+
 def render_panel_samping():
-    """Merender kotak identitas NPM di sebelah kiri."""
+    """Merender kotak identitas NPM dan tombol kontrol di sebelah kiri."""
     with st.sidebar:
         st.markdown("""
             <div style="text-align: center; padding: 1rem 0;">
@@ -88,9 +112,14 @@ def render_panel_samping():
             <div style="background-color: rgba(16, 185, 129, 0.1); padding: 15px; border-radius: 10px; border: 1px solid rgba(52, 211, 153, 0.2);">
                 <p style="font-size: 0.8rem; color: #A7F3D0 !important; margin: 0;">IDENTITAS PROYEK (UAS NLP)</p>
                 <p style="font-weight: 600; color: #FFFFFF !important; margin: 5px 0 0 0;">NPM: 233510516</p>
-                <p style="font-size: 0.8rem; margin: 0; color: #34D399 !important;">Teknik Informatika - Smt 5</p>
+                <p style="font-size: 0.8rem; margin: 0; color: #34D399 !important;">Teknik Informatika - Semester 6</p>
             </div>
         """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        
+        # Tombol pembersih obrolan memanggil fungsi hapus_memori_obrolan
+        st.button("🗑️ Bersihkan Obrolan", on_click=hapus_memori_obrolan, use_container_width=True)
 
 # ==========================================
 # INISIALISASI APLIKASI
