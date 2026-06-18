@@ -143,8 +143,11 @@ Code snippet
 
 GROQ_API_KEY="masukkan_groq_api_key_anda_di_sini"
 LANGCHAIN_TRACING_V2="true"
+
 LANGCHAIN_ENDPOINT="[https://api.smith.langchain.com](https://api.smith.langchain.com)"
+
 LANGCHAIN_API_KEY="masukkan_langchain_api_key_anda_di_sini"
+
 LANGCHAIN_PROJECT="UAS_NLP_Islamic_Assistant"
 
 6. Membangun Vector Database (Data Ingestion)
