@@ -88,7 +88,7 @@ Ketik perintah berikut di terminal Anda untuk meng-clone repositori:
 
 git clone [https://github.com/haikhal184/UAS_NLP_Islamic_Assistant.git](https://github.com/haikhal184/UAS_NLP_Islamic_Assistant.git)
 
-cd ai-islamic-assistant
+cd UAS_NLP_Islamic_Assistant
 
 
 2. Buat & Aktifkan Virtual Environment
