@@ -86,11 +86,14 @@ Bash
 git clone [https://github.com/haikhal184/UAS_NLP_Islamic_Assistant.git](https://github.com/haikhal184/UAS_NLP_Islamic_Assistant.git)
 
 cd UAS_NLP_Islamic_Assistant
+
 2. Pengecekan Versi Python (Wajib!)
 Sebelum membuat lingkungan virtual, pastikan terminal Anda membaca versi Python yang benar. Ketik:
 
 Bash
+
 python --version
+
 KONDISI AMAN: Jika muncul Python 3.10.x atau Python 3.11.x, silakan langsung lanjut ke Langkah 3.
 
 KONDISI BAHAYA: Jika muncul Python 3.13 atau 3.14, jangan dilanjutkan. Anda memiliki dua solusi:
@@ -100,50 +103,67 @@ Solusi A (Jalan Pintas): Jika Anda yakin sudah pernah menginstal Python 3.11 di 
 Solusi B (Instal Baru): Unduh Python 3.11 dari situs resmi, lakukan instalasi (pastikan centang "Add to PATH"), lalu restart VS Code Anda.
 
 3. Buat & Aktifkan Virtual Environment
+
 Untuk menghindari bentrok antar-pustaka Python di PC Anda, ketik perintah ini di terminal:
 
 Bash
+
 # Jika versi default sudah benar (3.10 / 3.11):
 python -m venv env
 
 # JALAN PINTAS (Jika default versi 3.14, tapi Anda punya versi 3.11 di sistem):
+
 py -3.11 -m venv env
+
 Setelah env terbentuk, aktifkan dengan perintah:
 
 Bash
+
 # Untuk mengaktifkan di Windows:
 env\Scripts\activate
 
 # Untuk mengaktifkan di Mac/Linux:
 source env/bin/activate
+
 (Pastikan muncul tulisan (env) di awal baris terminal).
 
 4. Instalasi Dependencies (Pustaka AI)
+
 Pastikan Anda menggunakan versi yang stabil dengan mengeksekusi perintah berikut secara utuh:
 
 Bash
+
 pip install "transformers>=4.40.0,<5.0.0" "sentence-transformers>=3.0.0" "torch>=2.2.0" langchain-community langchain-huggingface langchain-groq chromadb python-dotenv langgraph streamlit
+
 5. Setup File Kredensial (.env)
+
 Buat file baru bernama .env di folder utama (sejajar dengan app.py). Masukkan API Keys Anda:
 
 Code snippet
+
 GROQ_API_KEY="masukkan_groq_api_key_anda_di_sini"
 LANGCHAIN_TRACING_V2="true"
 LANGCHAIN_ENDPOINT="[https://api.smith.langchain.com](https://api.smith.langchain.com)"
 LANGCHAIN_API_KEY="masukkan_langchain_api_key_anda_di_sini"
 LANGCHAIN_PROJECT="UAS_NLP_Islamic_Assistant"
+
 6. Membangun Vector Database (Data Ingestion)
+
 Jalankan skrip pembacaan data untuk memuat teks korpus lokal ke dalam database vektor:
 
 Bash
+
 python src/data_ingestion.py
+
 (Tunggu hingga terminal menampilkan pesan ✅ PROSES INGESTI SELESAI DENGAN SUKSES!. Proses ini akan mengunduh model embedding Hugging Face Multilingual lokal).
 
 7. Jalankan Aplikasi Web
+
 Setelah database siap, luncurkan antarmuka aplikasi dengan perintah:
 
 Bash
 python -m streamlit run app.py
+
 🛠️ TROUBLESHOOTING (Solusi Error di Windows)
 Jika Anda menemui masalah saat menjalankan program di sistem operasi Windows, berikut adalah solusi untuk error yang paling umum terjadi:
 
